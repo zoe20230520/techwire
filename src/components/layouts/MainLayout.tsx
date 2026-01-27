@@ -1,7 +1,16 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Battery } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Menu, Battery, User, LogOut, Settings } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navigation = [
   { name: '首页', path: '/' },
@@ -13,9 +22,14 @@ const navigation = [
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const { user, profile, signOut } = useAuth();
 
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
   };
 
   return (
@@ -45,28 +59,103 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             ))}
           </nav>
 
-          {/* 移动端菜单 */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-64">
-              <nav className="flex flex-col gap-2 pt-8">
-                {navigation.map((item) => (
-                  <Link key={item.path} to={item.path}>
-                    <Button
-                      variant={isActive(item.path) ? 'default' : 'ghost'}
-                      className="w-full justify-start text-base"
-                    >
-                      {item.name}
-                    </Button>
-                  </Link>
-                ))}
-              </nav>
-            </SheetContent>
-          </Sheet>
+          {/* 用户菜单 */}
+          <div className="flex items-center gap-2">
+            {user && profile ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="hidden gap-2 md:flex">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {profile.username.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>{profile.username}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem disabled>
+                    <User className="mr-2 h-4 w-4" />
+                    {profile.username}
+                  </DropdownMenuItem>
+                  {profile.role === 'admin' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="cursor-pointer">
+                          <Settings className="mr-2 h-4 w-4" />
+                          管理后台
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    退出登录
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/login" className="hidden md:block">
+                <Button>登录</Button>
+              </Link>
+            )}
+
+            {/* 移动端菜单 */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-64">
+                <nav className="flex flex-col gap-2 pt-8">
+                  {navigation.map((item) => (
+                    <Link key={item.path} to={item.path}>
+                      <Button
+                        variant={isActive(item.path) ? 'default' : 'ghost'}
+                        className="w-full justify-start text-base"
+                      >
+                        {item.name}
+                      </Button>
+                    </Link>
+                  ))}
+                  {user && profile ? (
+                    <>
+                      <div className="my-2 border-t border-border" />
+                      <div className="px-2 py-1 text-sm text-muted-foreground">
+                        {profile.username}
+                      </div>
+                      {profile.role === 'admin' && (
+                        <Link to="/admin">
+                          <Button variant="ghost" className="w-full justify-start">
+                            <Settings className="mr-2 h-4 w-4" />
+                            管理后台
+                          </Button>
+                        </Link>
+                      )}
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={handleSignOut}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        退出登录
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="my-2 border-t border-border" />
+                      <Link to="/login">
+                        <Button className="w-full">登录</Button>
+                      </Link>
+                    </>
+                  )}
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </header>
 

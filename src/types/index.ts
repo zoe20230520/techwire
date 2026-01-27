@@ -5,6 +5,19 @@ export interface Option {
   withCount?: boolean;
 }
 
+// 用户角色类型
+export type UserRole = 'user' | 'admin';
+
+// 用户资料类型
+export interface Profile {
+  id: string;
+  username: string;
+  email: string | null;
+  role: UserRole;
+  created_at: string;
+  updated_at: string;
+}
+
 // 文章分类类型
 export type ArticleCategory = 'news' | 'article' | 'report';
 
@@ -20,6 +33,26 @@ export interface Article {
   views: number;
   created_at: string;
   updated_at: string;
+}
+
+// 新增文章输入类型
+export interface NewArticle {
+  title: string;
+  summary: string;
+  content: string;
+  category: ArticleCategory;
+  cover_image: string;
+  author: string;
+}
+
+// 更新文章输入类型
+export interface UpdateArticle {
+  title?: string;
+  summary?: string;
+  content?: string;
+  category?: ArticleCategory;
+  cover_image?: string;
+  author?: string;
 }
 
 // 评论类型
