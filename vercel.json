@@ -1,5 +1,4 @@
 {
-  "installCommand": "pnpm install --timeout 600000 --registry https://registry.npmmirror.com/",
+  "installCommand": "pnpm install --fetch-timeout 600000 --registry https://registry.npmmirror.com/",
   "buildCommand": "pnpm run build"
-  
 }
