@@ -67,12 +67,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithUsername = async (username: string, password: string) => {
     try {
       const email = `${username}@miaoda.com`;
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
+      
+      // 登录成功后立即获取用户资料
+      if (data.user) {
+        const profileData = await getProfile(data.user.id);
+        setProfile(profileData);
+      }
+      
       return { error: null };
     } catch (error) {
       return { error: error as Error };
@@ -82,12 +89,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUpWithUsername = async (username: string, password: string) => {
     try {
       const email = `${username}@miaoda.com`;
-      const { error } = await supabase.auth.signUp({
+      const { error, data } = await supabase.auth.signUp({
         email,
         password,
       });
 
       if (error) throw error;
+      
+      // 注册成功后立即获取用户资料
+      if (data.user) {
+        const profileData = await getProfile(data.user.id);
+        setProfile(profileData);
+      }
+      
       return { error: null };
     } catch (error) {
       return { error: error as Error };
