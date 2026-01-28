@@ -14,14 +14,14 @@ const adminNavigation = [
 export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, signOut } = useAuth();
+  const { profile, loading, signOut } = useAuth();
 
   // 检查管理员权限
   useEffect(() => {
-    if (profile && profile.role !== 'admin') {
+    if (!loading && profile && profile.role !== 'admin') {
       navigate('/', { replace: true });
     }
-  }, [profile, navigate]);
+  }, [profile, loading, navigate]);
 
   const isActive = (path: string) => {
     if (path === '/admin') {
@@ -35,8 +35,39 @@ export default function AdminLayout() {
     navigate('/login');
   };
 
-  if (!profile || profile.role !== 'admin') {
-    return null;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-2xl font-semibold mb-2">请先登录</div>
+          <Link to="/login">
+            <Button>去登录</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (profile.role !== 'admin') {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-2xl font-semibold mb-2">无权限访问</div>
+          <div className="text-muted-foreground mb-4">您不是管理员，无法访问后台</div>
+          <Link to="/">
+            <Button>返回首页</Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
