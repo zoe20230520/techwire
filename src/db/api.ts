@@ -1,8 +1,14 @@
 // 模拟数据模式
 const USE_MOCK_DATA = true;
 
-import { supabase } from './supabase';
 import type { Article, Comment, NewComment, UpdateComment, ArticleCategory, NewArticle, UpdateArticle } from '@/types';
+
+// 仅在不使用模拟数据时导入supabase
+let supabase: any = null;
+if (!USE_MOCK_DATA) {
+  const { supabase: sb } = require('./supabase');
+  supabase = sb;
+}
 
 // 模拟文章数据
 const MOCK_ARTICLES: Article[] = [
