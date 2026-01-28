@@ -1,21 +1,30 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { supabase } from '@/db/supabase';
 import type { User } from '@supabase/supabase-js';
 import type { Profile } from '@/types';
 
-export async function getProfile(userId: string): Promise<Profile | null> {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .maybeSingle();
+// 模拟用户数据
+const MOCK_USERS = [
+  {
+    id: '1',
+    username: 'admin',
+    email: 'admin@miaoda.com',
+    role: 'admin' as const,
+    created_at: new Date().toISOString(),
+  },
+];
 
-  if (error) {
-    console.error('获取用户信息失败:', error);
-    return null;
-  }
-  return data;
+// 模拟获取用户资料
+export async function getProfile(userId: string): Promise<Profile | null> {
+  console.log('获取用户资料:', userId);
+  // 模拟 API 延迟
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  // 查找模拟用户
+  const user = MOCK_USERS.find(u => u.id === userId);
+  console.log('获取用户资料成功:', user);
+  return user as Profile | null;
 }
+
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
@@ -44,72 +53,105 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        getProfile(session.user.id).then(setProfile);
-      }
+    // 模拟加载会话
+    setTimeout(() => {
       setLoading(false);
-    });
-    // In this function, do NOT use any await calls. Use `.then()` instead to avoid deadlocks.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        getProfile(session.user.id).then(setProfile);
-      } else {
-        setProfile(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    }, 500);
   }, []);
 
   const signInWithUsername = async (username: string, password: string) => {
     try {
-      const email = `${username}@miaoda.com`;
-      const { error, data } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
+      console.log('登录尝试:', username);
+      // 模拟 API 延迟
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      // 登录成功后立即获取用户资料
-      if (data.user) {
-        const profileData = await getProfile(data.user.id);
+      // 简单的模拟认证逻辑
+      if (username === 'admin' && password === 'admin123') {
+        // 模拟用户对象
+        const mockUser = {
+          id: '1',
+          email: `${username}@miaoda.com`,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          last_sign_in_at: new Date().toISOString(),
+          app_metadata: {},
+          user_metadata: {},
+          identities: [],
+          is_anonymous: false,
+        } as User;
+        
+        setUser(mockUser);
+        
+        // 登录成功后立即获取用户资料
+        const profileData = await getProfile(mockUser.id);
+        console.log('用户资料:', profileData);
         setProfile(profileData);
+        
+        console.log('登录成功:', mockUser);
+        return { error: null };
+      } else {
+        // 模拟登录失败
+        throw new Error('Invalid login credentials');
       }
-      
-      return { error: null };
     } catch (error) {
+      console.error('登录失败:', error);
       return { error: error as Error };
     }
   };
 
   const signUpWithUsername = async (username: string, password: string) => {
     try {
-      const email = `${username}@miaoda.com`;
-      const { error, data } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) throw error;
+      console.log('注册尝试:', username);
+      // 模拟 API 延迟
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      // 注册成功后立即获取用户资料
-      if (data.user) {
-        const profileData = await getProfile(data.user.id);
-        setProfile(profileData);
+      // 简单的模拟注册逻辑
+      if (MOCK_USERS.some(u => u.username === username)) {
+        throw new Error('User already registered');
       }
       
+      // 创建新用户
+      const newUser = {
+        id: (MOCK_USERS.length + 1).toString(),
+        username,
+        email: `${username}@miaoda.com`,
+        role: 'user' as const, // 新用户默认为普通用户
+        created_at: new Date().toISOString(),
+      };
+      
+      MOCK_USERS.push(newUser);
+      
+      // 模拟用户对象
+      const mockUser = {
+        id: newUser.id,
+        email: newUser.email,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        last_sign_in_at: new Date().toISOString(),
+        app_metadata: {},
+        user_metadata: {},
+        identities: [],
+        is_anonymous: false,
+      } as User;
+      
+      setUser(mockUser);
+      
+      // 注册成功后立即获取用户资料
+      const profileData = await getProfile(mockUser.id);
+      console.log('用户资料:', profileData);
+      setProfile(profileData);
+      
+      console.log('注册成功:', mockUser);
       return { error: null };
     } catch (error) {
+      console.error('注册失败:', error);
       return { error: error as Error };
     }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // 模拟登出
+    await new Promise(resolve => setTimeout(resolve, 300));
     setUser(null);
     setProfile(null);
   };
