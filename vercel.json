@@ -1,0 +1,5 @@
+{
+  "installCommand": "pnpm install --timeout 600000 --registry https://registry.npmmirror.com/",
+  "buildCommand": "pnpm run build",
+  "packageManager": "pnpm@9.12.2"
+}
